@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Exact Official BSF Open Bible Symbol matching user uploaded image.png -->
+  <!-- Color: Warm Golden Yellow / Amber #F59E0B -->
+  <g fill="#F59E0B">
+    <!-- Left Page Wing -->
+    <path d="M12 14.5 L42 28.5 L42 39.5 L24 31 L24 67 L44 76.5 L44 87.5 L12 75.5 Z" />
+    
+    <!-- Right Page Wing & Flowing Center Arch -->
+    <path d="M44 96 L44 50 C44 32 58 17 88 14.5 L88 75.5 L64 75.5 L64 64.5 L76 64.5 L76 27 C59 29 55 42 55 58 L55 96 Z" />
+  </g>
+</svg>
