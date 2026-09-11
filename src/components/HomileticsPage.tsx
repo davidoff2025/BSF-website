@@ -79,7 +79,7 @@ export const HomileticsPage: React.FC = () => {
             </h2>
             <p className="text-sm text-[#78716c] mt-1 max-w-3xl">
               {language === 'zh'
-                ? 'BSF经典五步讲道法研经工具。每周更新指定作业经文，学员登录后可直接在线草拟、保存并提交作业，同步记录于学员管理进度看板中。'
+                ? 'BSF经典五步讲道法研经工具。每周更新指定作业经文，学员可直接在线草拟、保存并提交作业，同步记录于学员管理进度看板中。'
                 : 'BSF classic 5-step homiletics methodology worksheet. Updates weekly, allows draft saving, direct submission, and sync with your personal study tracker.'}
             </p>
           </div>
