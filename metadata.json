@@ -1,6 +1,6 @@
 {
-  "name": "BSF Document & Study Hub",
-  "description": "Bilingual Bible Study Fellowship portal for Romans study year documents, class calendars, sequential lecture audio, homiletics assignments, and study tracker.",
+  "name": "Atlanta BSF辅助学习工具",
+  "description": "Atlanta BSF 查经团契辅助学习工具，提供罗马书每周金句经文背诵、逐周讲道音频收听与班级日历查询。",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

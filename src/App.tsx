@@ -84,7 +84,7 @@ export const App: React.FC = () => {
 
   // Determine current HTML5 audio source
   const currentAudioSrc = driveAudio
-    ? driveAudio.directDownloadUrl
+    ? driveAudio.directStreamUrl
     : `/audio/${lesson.audioFileName}`;
 
   // Handle setting playback speed
@@ -98,8 +98,7 @@ export const App: React.FC = () => {
   // Reset audio state when switching lessons, and set optimal player mode
   useEffect(() => {
     setAudioError(null);
-    const hasDriveAudio = !!GOOGLE_DRIVE_LECTURE_AUDIOS[selectedLessonIndex];
-    setPlayerMode(hasDriveAudio ? 'gdrive_embed' : 'html5');
+    setPlayerMode('html5');
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -108,7 +107,7 @@ export const App: React.FC = () => {
 
   // Copy Key Verse
   const handleCopyKeyVerse = () => {
-    const textToCopy = `【${lesson.titleZh} • 本周金句】\n“${lesson.keyVerseZh}” —— ${lesson.keyVerseRefZh}\n\n【核心属灵真理】\n${lesson.keyTruthZh}`;
+    const textToCopy = `【${lesson.titleZh} • 本周金句】\n“${lesson.keyVerseZh}” —— ${lesson.keyVerseRefZh}`;
     navigator.clipboard.writeText(textToCopy);
     setCopiedKeyVerse(true);
     setTimeout(() => setCopiedKeyVerse(false), 2000);
@@ -163,7 +162,7 @@ export const App: React.FC = () => {
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#1c1917] tracking-tight mt-1">
-                罗马书研经 • 每周核心经文与录音
+                Atlanta BSF 辅助学习工具
               </h1>
               {/* Quick status badge directly under title */}
               <div className="mt-1.5 flex items-center gap-2">
@@ -309,13 +308,6 @@ export const App: React.FC = () => {
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-
-              {/* Schedule note requested by user */}
-              <div className="mt-2 text-[11px] text-[#78716c] flex items-center justify-between">
-                <span>
-                  💡 <strong>排课规则：</strong> 9/14 当周显示第 0 课；每周六（9/19、9/26...）自动顺延切换至下一课。
-                </span>
-              </div>
             </>
           )}
         </div>
@@ -386,15 +378,6 @@ export const App: React.FC = () => {
               </p>
             )}
           </blockquote>
-
-          {/* Core spiritual truth */}
-          <div className="mt-4 pt-3 border-t border-[#f5f5f4] flex items-start gap-2 text-xs sm:text-sm text-[#57534e]">
-            <Sparkles className="w-4 h-4 text-[#881337] shrink-0 mt-0.5" />
-            <div>
-              <strong className="text-[#1c1917]">核心属灵真理：</strong>
-              <span>{lesson.keyTruthZh}</span>
-            </div>
-          </div>
         </section>
 
 
@@ -426,8 +409,6 @@ export const App: React.FC = () => {
                   <span className="font-mono font-medium text-[#881337]">
                     {currentFileName}
                   </span>
-                  <span>•</span>
-                  <span>讲员: {lesson.speakerZh}</span>
                 </div>
               </div>
             </div>
@@ -496,66 +477,39 @@ export const App: React.FC = () => {
           {/* Active Player View */}
           <div className="mt-4">
             {playerMode === 'gdrive_embed' && activeDriveFileId ? (
-              <div className="space-y-2">
-                <div className="rounded-xl overflow-hidden border border-[#d6d3d1] bg-[#f8f9fa] shadow-inner relative">
-                  <iframe
-                    key={activeDriveFileId}
-                    src={`https://drive.google.com/file/d/${activeDriveFileId}/preview`}
-                    className="w-full h-28 border-0"
-                    allow="autoplay"
-                    title={`Google Drive 音频播放 - ${currentFileName}`}
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-between text-xs text-[#78716c] px-1 gap-2">
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    使用 Google 云端硬盘原生流媒体播放（无需下载，即点即播）
-                  </span>
-
-                  <a
-                    href={`https://drive.google.com/file/d/${activeDriveFileId}/view`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[#881337] hover:underline font-medium"
-                  >
-                    <span>在新窗口中打开 Google Drive</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
+              <div className="rounded-xl overflow-hidden border border-[#d6d3d1] bg-[#f8f9fa] shadow-inner relative">
+                <iframe
+                  key={activeDriveFileId}
+                  src={`https://drive.google.com/file/d/${activeDriveFileId}/preview`}
+                  className="w-full h-28 border-0"
+                  allow="autoplay"
+                  title={`音频播放 - ${currentFileName}`}
+                />
               </div>
             ) : (
               <div>
                 <audio
                   ref={audioRef}
+                  key={`desktop-audio-${selectedLessonIndex}`}
                   controls
-                  src={currentAudioSrc}
+                  preload="metadata"
+                  playsInline
                   className="w-full h-11 focus:outline-none rounded-lg"
                   onError={() => {
                     if (activeDriveFileId) {
-                      setAudioError('Google Drive 触发了访问保护或大文件安全扫描。已为您准备好了原生播放器，建议点击右上角「云端原生播放」直接收听。');
+                      setAudioError('网络受限或跨域缓冲超时。建议点击右上方「云端原生播放」收听。');
                     } else {
                       setAudioError('音频加载失败，请检查网络或音频链接是否有效。');
                     }
                   }}
                   onCanPlay={() => setAudioError(null)}
                 >
+                  <source src={currentAudioSrc} type="audio/mpeg" />
+                  {driveAudio && (
+                    <source src={driveAudio.fallbackStreamUrl} type="audio/mpeg" />
+                  )}
                   您的浏览器不支持直接播放 HTML5 MP3 音频。
                 </audio>
-
-                {/* Direct helper if audio cannot stream via HTML5 tag */}
-                {activeDriveFileId && (
-                  <div className="mt-2.5 flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-xs text-amber-900">
-                    <span className="leading-relaxed">
-                      💡 若此标准播放器显示 0:00 无法缓冲，请一键切换到：
-                    </span>
-                    <button
-                      onClick={() => setPlayerMode('gdrive_embed')}
-                      className="ml-2 px-3 py-1 bg-[#881337] text-white font-medium rounded-md hover:bg-[#6e0f2c] transition-colors shrink-0 shadow-2xs"
-                    >
-                      切换为云端原生播放器
-                    </button>
-                  </div>
-                )}
 
                 {/* Error message */}
                 {audioError && !activeDriveFileId && (

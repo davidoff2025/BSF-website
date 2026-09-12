@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { LessonInfo, ROMANS_LESSONS } from '../data/romansPassages';
 import { DriveLectureAudio } from '../data/driveAudios';
 import {
@@ -39,13 +39,20 @@ export const MobileLessonView: React.FC<MobileLessonViewProps> = ({
   const [playerType, setPlayerType] = useState<'embed' | 'html5'>('html5');
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [audioLoadError, setAudioLoadError] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const isCurrentWeek = selectedLessonIndex === currentWeekLessonIndex;
 
+  // Reset audio error on lesson switch
+  useEffect(() => {
+    setAudioLoadError(false);
+    setIsPlaying(false);
+  }, [selectedLessonIndex]);
+
   // Copy key verse
   const handleCopyKeyVerse = () => {
-    const text = `【${lesson.titleZh} • 本周金句】\n“${lesson.keyVerseZh}” —— ${lesson.keyVerseRefZh}\n\n【核心真理】\n${lesson.keyTruthZh}`;
+    const text = `【${lesson.titleZh} • 本周金句】\n“${lesson.keyVerseZh}” —— ${lesson.keyVerseRefZh}`;
     navigator.clipboard.writeText(text);
     setCopiedVerse(true);
     setTimeout(() => setCopiedVerse(false), 2000);
@@ -184,14 +191,6 @@ export const MobileLessonView: React.FC<MobileLessonViewProps> = ({
               —— {lesson.keyVerseRefZh}
             </div>
           </div>
-
-          <div className="mt-2.5 pt-2 border-t border-[#f5f5f4] flex items-start gap-1.5 text-xs text-[#57534e]">
-            <Sparkles className="w-3.5 h-3.5 text-[#881337] shrink-0 mt-0.5" />
-            <p className="leading-snug">
-              <strong className="text-[#1c1917]">核心真理：</strong>
-              {lesson.keyTruthZh}
-            </p>
-          </div>
         </section>
 
 
@@ -212,8 +211,8 @@ export const MobileLessonView: React.FC<MobileLessonViewProps> = ({
               </span>
             </div>
 
-            <span className="text-[11px] text-[#78716c] truncate">
-              讲员: {lesson.speakerZh}
+            <span className="text-[11px] text-[#78716c] truncate font-mono">
+              第 {selectedLessonIndex} 课音频
             </span>
           </div>
 
@@ -232,13 +231,12 @@ export const MobileLessonView: React.FC<MobileLessonViewProps> = ({
                     />
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-[#78716c] px-1">
-                    <span>💡 点击上方播放器中的 ▶ 按钮即可收听</span>
+                  <div className="flex items-center justify-end text-[11px] px-1">
                     <button
                       onClick={() => setPlayerType('html5')}
-                      className="text-[#881337] hover:underline font-medium"
+                      className="text-[#881337] hover:underline font-medium cursor-pointer"
                     >
-                      切换极简条
+                      切换极简播放条
                     </button>
                   </div>
                 </div>
@@ -247,14 +245,48 @@ export const MobileLessonView: React.FC<MobileLessonViewProps> = ({
                 <div className="bg-[#faf8f5] p-3 rounded-lg border border-[#e7e5e4] space-y-2.5">
                   <audio
                     ref={audioRef}
-                    src={driveAudio.directDownloadUrl}
-                    preload="none"
+                    key={`mobile-audio-${selectedLessonIndex}`}
+                    preload="metadata"
+                    playsInline
+                    controls
+                    className="w-full h-10"
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => setIsPlaying(false)}
-                    className="w-full h-10"
-                    controls
-                  />
+                    onError={() => setAudioLoadError(true)}
+                  >
+                    <source src={driveAudio.directStreamUrl} type="audio/mpeg" />
+                    <source src={driveAudio.fallbackStreamUrl} type="audio/mpeg" />
+                    您的手机浏览器暂不支持直接音频播放
+                  </audio>
+
+                  {audioLoadError && (
+                    <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-1.5">
+                      <p className="font-semibold flex items-center gap-1">
+                        <span>⚠️ 直接播放遇到网络受限</span>
+                      </p>
+                      <p className="text-[11px] text-amber-800 leading-normal">
+                        若您在微信或特定网络下无法加载，可切换备用播放器或下载：
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button
+                          onClick={() => setPlayerType('embed')}
+                          className="px-2.5 py-1 rounded bg-[#881337] text-white text-[11px] font-bold cursor-pointer"
+                        >
+                          切换备用播放器 ▶
+                        </button>
+                        <a
+                          href={driveAudio.directDownloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 rounded bg-white border border-amber-300 text-amber-900 text-[11px] font-bold inline-flex items-center gap-1"
+                        >
+                          <span>下载 MP3</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#e7e5e4] text-xs">
                     <div className="flex items-center gap-1 text-[11px] text-[#78716c]">
@@ -263,7 +295,7 @@ export const MobileLessonView: React.FC<MobileLessonViewProps> = ({
                         <button
                           key={speed}
                           onClick={() => handleSpeedChange(speed)}
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer ${
                             playbackSpeed === speed
                               ? 'bg-[#881337] text-white'
                               : 'bg-white text-[#44403c] border border-[#d6d3d1]'
@@ -274,28 +306,27 @@ export const MobileLessonView: React.FC<MobileLessonViewProps> = ({
                       ))}
                     </div>
 
-                    <button
-                      onClick={() => setPlayerType('embed')}
-                      className="text-[11px] text-[#881337] hover:underline font-medium"
-                    >
-                      切换云端原装播放器
-                    </button>
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        onClick={() => setPlayerType('embed')}
+                        className="text-[11px] text-[#881337] hover:underline font-medium cursor-pointer"
+                      >
+                        备用播放器
+                      </button>
+                      <a
+                        href={driveAudio.directDownloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-[#78716c] hover:text-[#881337] inline-flex items-center gap-0.5"
+                        title="下载 MP3"
+                      >
+                        <span>下载</span>
+                        <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
-
-              {/* Direct Open Link fallback */}
-              <div className="mt-2 text-right">
-                <a
-                  href={driveAudio.directDownloadUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-[#78716c] hover:text-[#881337]"
-                >
-                  <span>新窗口直达/下载 MP3</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
             </div>
           ) : (
             <div className="p-3 bg-stone-50 rounded-lg text-center text-xs text-[#78716c]">
